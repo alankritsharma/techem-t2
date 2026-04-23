@@ -1,0 +1,12 @@
+{
+  "dataset_dir": "dataset",
+  "output_dir": "outputs",
+  "grain": "unit",
+  "horizon_days": 30,
+  "validation_days": 60,
+  "max_train_rows": 10000,
+  "price_eur_per_kwh": 0.12,
+  "property_id": "property_1",
+  "unit_id": "property_1_unit_1",
+  "future_weather_csv": null
+}

@@ -1,0 +1,7 @@
+pandas>=2.0
+numpy>=1.24
+scikit-learn>=1.2
+
+# Optional stronger model. The code automatically uses the sklearn fallback
+# when xgboost is not installed.
+# xgboost>=1.7
