@@ -10,7 +10,7 @@ TARGET_COLUMN = "energy_usage_kwh"
 LAG_DAYS = [1, 2, 3, 7, 14, 28]
 ROLLING_WINDOWS = [3, 7, 14, 28]
 
-CATEGORICAL_FEATURES = ["property_id", "unit_id", "zipcode", "city", "energy_source"]
+CATEGORICAL_FEATURES = ["property_id", "unit_id", "zipcode", "city", "energy_source", "heating_mode"]
 NUMERIC_FEATURES = [
     "unit_number",
     "outside_temp_c",
@@ -18,6 +18,12 @@ NUMERIC_FEATURES = [
     "room_count",
     "emission_factor_g_per_kwh",
     "is_missing_observation",
+    "room_temperature_c",
+    "heater_setpoint_c",
+    "radiator_valve_open_pct",
+    "humidity_pct",
+    "occupancy_proxy",
+    "window_open_risk",
     "day_of_week",
     "is_weekend",
     "month",

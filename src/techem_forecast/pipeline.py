@@ -10,7 +10,7 @@ import pandas as pd
 
 from .aggregate import annual_totals, monthly_totals, portfolio_annual_totals, portfolio_monthly_totals
 from .business_logic import add_cost_and_emissions
-from .data_loader import load_dataset, load_future_weather
+from .data_loader import load_daily_history, load_dataset, load_future_weather
 from .features import make_modeling_frame
 from .predict import forecast_daily
 from .preprocess import prepare_daily_data
@@ -22,8 +22,10 @@ class ForecastRunConfig:
     dataset_dir: str = "dataset"
     output_dir: str = "outputs"
     grain: str = "unit"
+    history_path: str | None = None
     horizon_days: int = 30
     validation_days: int = 60
+    validation_cutoff_date: str | None = None
     max_train_rows: int | None = None
     price_eur_per_kwh: float = 0.12
     property_id: str | None = None
@@ -32,11 +34,17 @@ class ForecastRunConfig:
 
 
 def run_forecast(config: ForecastRunConfig) -> dict[str, pd.DataFrame | dict]:
-    raw = load_dataset(config.dataset_dir)
-    daily = prepare_daily_data(raw, grain=config.grain)
+    if config.history_path:
+        daily = load_daily_history(config.history_path)
+    else:
+        raw = load_dataset(config.dataset_dir)
+        daily = prepare_daily_data(raw, grain=config.grain)
     features = make_modeling_frame(daily)
     forecaster = train_forecaster(
-        features, validation_days=config.validation_days, max_train_rows=config.max_train_rows
+        features,
+        validation_days=config.validation_days,
+        max_train_rows=config.max_train_rows,
+        validation_cutoff_date=config.validation_cutoff_date,
     )
     future_weather = load_future_weather(config.future_weather_csv)
     daily_forecast = forecast_daily(
