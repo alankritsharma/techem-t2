@@ -1,7 +1,34 @@
+# OS / editor
 .DS_Store
+.vscode/
+.idea/
+
+# Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
 .venv/
 venv/
+env/
+
+# Node / frontend builds
+node_modules/
+dist/
+build/
+.vite/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+app_interface/backend/.env.local
+
+# Generated outputs / artifacts
 outputs/
-trusted-building-dashboard(2)/
+*.parquet
+*.pkl
+*.joblib
