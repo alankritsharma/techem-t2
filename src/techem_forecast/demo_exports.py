@@ -15,12 +15,70 @@ from .preprocess import prepare_daily_data
 
 
 DEMO_PASSWORD = "Demo-Techem-2026!"
-LANDLORD_NAMES = [
-    "NordHaus Capital",
-    "RheinBlock Verwaltung",
-    "UrbanGrid Estates",
-    "HelioLiving Group",
-    "MainWest Property",
+LANDLORD_CONTACTS = [
+    {"display_name": "Jan Peters", "company_name": "NordHaus Capital"},
+    {"display_name": "Tim Woydt", "company_name": "RheinBlock Verwaltung"},
+    {"display_name": "Sarah Keller", "company_name": "UrbanGrid Estates"},
+    {"display_name": "Mila Hartmann", "company_name": "HelioLiving Group"},
+    {"display_name": "Jonas Becker", "company_name": "MainWest Property"},
+]
+PROPERTY_NAMES = [
+    "Axiom Heights",
+    "Linden Court",
+    "Harbor Point",
+    "Cedar House",
+    "Northgate Residences",
+    "Riverside Lofts",
+    "Willow Square",
+    "Summit Gardens",
+    "Aurora Park",
+    "Maple Terrace",
+    "Beacon Row",
+    "Elm Quarter",
+    "Parkside Court",
+    "Atlas Residences",
+    "Stonebridge Heights",
+    "Skyline Court",
+    "Juniper Place",
+    "Westfield House",
+    "Crown Terrace",
+    "Oakline Residences",
+]
+TENANT_FIRST_NAMES = [
+    "Emma",
+    "Lena",
+    "Noah",
+    "Mia",
+    "Ben",
+    "Sofia",
+    "Paul",
+    "Clara",
+    "Jonas",
+    "Leonie",
+    "Finn",
+    "Nora",
+    "Luca",
+    "Hannah",
+    "David",
+    "Mila",
+]
+TENANT_LAST_NAMES = [
+    "Wagner",
+    "Hoffmann",
+    "Schulz",
+    "Becker",
+    "Keller",
+    "Hartmann",
+    "Lehmann",
+    "Richter",
+    "Koch",
+    "Wolf",
+    "Schreiber",
+    "Neumann",
+    "Winter",
+    "Lorenz",
+    "Bauer",
+    "Kruger",
 ]
 
 VALUE_COLUMNS = [
@@ -154,7 +212,7 @@ def build_demo_registries(
             {
                 "property_id": property_id,
                 "property_number": _property_number(property_id),
-                "display_name": f"Techem Property {_property_number(property_id):02d}",
+                "display_name": PROPERTY_NAMES[(_property_number(property_id) - 1) % len(PROPERTY_NAMES)],
                 "city": str(group["city"].iloc[0]),
                 "zipcode": str(group["zipcode"].iloc[0]),
                 "energy_source": str(group["energy_source"].iloc[0]),
@@ -171,16 +229,20 @@ def build_demo_registries(
     property_to_landlord: dict[str, str] = {}
     for landlord_index in range(landlord_count):
         landlord_id = f"landlord_{landlord_index + 1:02d}"
-        name = (
-            LANDLORD_NAMES[landlord_index]
-            if landlord_index < len(LANDLORD_NAMES)
-            else f"Demo Landlord {landlord_index + 1:02d}"
+        contact = (
+            LANDLORD_CONTACTS[landlord_index]
+            if landlord_index < len(LANDLORD_CONTACTS)
+            else {
+                "display_name": f"Landlord {landlord_index + 1:02d}",
+                "company_name": f"Demo Property Group {landlord_index + 1:02d}",
+            }
         )
         username = f"landlord{landlord_index + 1:02d}"
         landlords.append(
             {
                 "landlord_id": landlord_id,
-                "display_name": name,
+                "display_name": contact["display_name"],
+                "company_name": contact["company_name"],
                 "username": username,
                 "email": f"{username}@demo.techem.local",
                 "password": demo_password,
@@ -198,6 +260,8 @@ def build_demo_registries(
             {
                 **property_meta,
                 "landlord_id": landlord["landlord_id"],
+                "owner_display_name": landlord["display_name"],
+                "owner_company_name": landlord["company_name"],
             }
         )
 
@@ -205,13 +269,13 @@ def build_demo_registries(
     units: list[dict] = []
     for row in unit_latest.itertuples(index=False):
         property_number = _property_number(row.property_id)
-        unit_label = f"P{property_number:02d}-U{int(row.unit_number):02d}"
         tenant_id = f"tenant_{row.unit_id}"
         username = f"tenant_p{property_number:02d}_u{int(row.unit_number):02d}"
+        tenant_name = _tenant_display_name(property_number, int(row.unit_number))
         tenants.append(
             {
                 "tenant_id": tenant_id,
-                "display_name": f"Resident {unit_label}",
+                "display_name": tenant_name,
                 "username": username,
                 "email": f"{username}@demo.techem.local",
                 "password": demo_password,
@@ -307,7 +371,7 @@ def build_landlord_summaries(
     )
     summary = summary.merge(counts, on="landlord_id", how="left")
     summary = summary.merge(
-        landlord_frame[["landlord_id", "display_name", "username", "email", "property_ids"]],
+        landlord_frame[["landlord_id", "display_name", "company_name", "username", "email", "property_ids"]],
         on="landlord_id",
         how="left",
     )
@@ -435,3 +499,10 @@ def _sum_over_horizon(frame: pd.DataFrame, group_columns: list[str]) -> pd.DataF
 def _property_number(property_id: str) -> int:
     suffix = str(property_id).split("_")[-1]
     return int(suffix) if suffix.isdigit() else 0
+
+
+def _tenant_display_name(property_number: int, unit_number: int) -> str:
+    index = ((property_number - 1) * 17) + max(0, unit_number - 1)
+    first = TENANT_FIRST_NAMES[index % len(TENANT_FIRST_NAMES)]
+    last = TENANT_LAST_NAMES[(index // len(TENANT_FIRST_NAMES)) % len(TENANT_LAST_NAMES)]
+    return f"{first} {last}"

@@ -32,3 +32,11 @@ outputs/
 *.parquet
 *.pkl
 *.joblib
+
+# Local scratch / side experiments not part of the final demo repo
+ai_studio_context.txt
+friend_chat.md
+Techem-Logo.png
+app_interface/
+trusted-building-dashboard(2)/
+remix_-trusted-building-dashboard--cs-energy-prgnose-update(5)/
