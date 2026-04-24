@@ -28,14 +28,20 @@ class TrainedForecaster:
 
 
 def train_forecaster(
-    feature_frame: pd.DataFrame, validation_days: int = 60, max_train_rows: int | None = None
+    feature_frame: pd.DataFrame,
+    validation_days: int = 60,
+    max_train_rows: int | None = None,
+    validation_cutoff_date: str | pd.Timestamp | None = None,
 ) -> TrainedForecaster:
     """Train a main ML forecaster using a strict time-based validation split."""
 
     model_frame = feature_frame.dropna(subset=[TARGET_COLUMN]).copy()
     feature_columns = available_feature_columns(model_frame)
     model_frame = model_frame.dropna(subset=feature_columns, how="all")
-    cutoff = model_frame["date"].max() - pd.Timedelta(days=validation_days)
+    if validation_cutoff_date is not None:
+        cutoff = pd.Timestamp(validation_cutoff_date)
+    else:
+        cutoff = model_frame["date"].max() - pd.Timedelta(days=validation_days)
 
     train_df = model_frame[model_frame["date"] <= cutoff]
     validation_df = model_frame[model_frame["date"] > cutoff]
