@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: techem-demo-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3.11 scripts/start_demo_server.py --output-dir /tmp/techem-demo
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DEMO_ALLOWED_ORIGINS
+        sync: false

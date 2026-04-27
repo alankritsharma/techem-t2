@@ -163,6 +163,97 @@ The generated data keeps important real structure:
 
 The generator uses a fixed seed, so the same input data creates the same demo dataset again. That is important because the frontend, demo credentials, tenant examples, and dashboard behavior stay reproducible.
 
+## Putting It Live
+
+The easiest production-style setup for this repo is:
+
+1. Deploy the React frontend on Netlify from GitHub
+2. Deploy the FastAPI backend on Render from the same GitHub repo
+3. Connect them with environment variables
+
+This repo now includes:
+
+- `netlify.toml` for the frontend build
+- `render.yaml` for the backend service
+- `scripts/start_demo_server.py` so Render can generate demo JSON automatically before starting the API
+
+### 1. Push the repo to GitHub
+
+Make sure the repository includes:
+
+- `dataset/`
+- `src/`
+- `scripts/`
+- `requirements.txt`
+- `evidence.ai-—-executive-trust-infrastructure/`
+
+The generated `outputs/` folder does not need to be committed. The backend can recreate the demo artifacts at startup.
+
+### 2. Deploy the frontend on Netlify
+
+Create a new site from GitHub and select this repository.
+
+Netlify should pick up `netlify.toml`, but the important values are:
+
+- Base directory: `evidence.ai-—-executive-trust-infrastructure`
+- Build command: `npm run build`
+- Publish directory: `dist`
+
+Set this environment variable in Netlify:
+
+```bash
+VITE_API_BASE=https://YOUR-RENDER-SERVICE.onrender.com
+```
+
+After deploy, Netlify will give you a URL like:
+
+```text
+https://your-site-name.netlify.app
+```
+
+### 3. Deploy the backend on Render
+
+Create a new Web Service from the same GitHub repo. Render can read `render.yaml`, or you can enter the settings manually.
+
+Important backend settings:
+
+- Runtime: Python
+- Build command: `pip install -r requirements.txt`
+- Start command: `python3.11 scripts/start_demo_server.py --output-dir /tmp/techem-demo`
+
+Set this environment variable in Render:
+
+```bash
+DEMO_ALLOWED_ORIGINS=https://YOUR-NETLIFY-SITE.netlify.app
+```
+
+If you later add a custom domain, include it too as a comma-separated list:
+
+```bash
+DEMO_ALLOWED_ORIGINS=https://YOUR-NETLIFY-SITE.netlify.app,https://app.yourdomain.com
+```
+
+### 4. Redeploy both sides
+
+Once Render gives you the backend URL:
+
+1. Copy that URL into Netlify as `VITE_API_BASE`
+2. Copy the Netlify URL into Render as `DEMO_ALLOWED_ORIGINS`
+3. Trigger redeploys
+
+### 5. What GitHub Pages can and cannot do
+
+GitHub Pages can host the frontend, but not the FastAPI backend. So if you want a full live system, GitHub Pages alone is not enough for this repo.
+
+### 6. Simplest recommendation
+
+If you want something that feels like `something.netlify.app`, use:
+
+- Netlify for the frontend
+- Render for the backend
+
+That is the cleanest match for this project structure.
+
 ## Core Calculations
 
 ### Unit-Day Aggregation

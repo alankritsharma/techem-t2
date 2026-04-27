@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
@@ -52,6 +53,13 @@ TENANT_ROOM_TEMP_BOUNDS = {
     "comfort": (19.0, 21.0),
     "boost": (20.0, 22.5),
 }
+
+
+def _configured_allowed_origins() -> list[str]:
+    raw = os.getenv("DEMO_ALLOWED_ORIGINS", "")
+    if not raw.strip():
+        return []
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
 class DemoDataStore:
@@ -645,12 +653,14 @@ class LiveSimulationStore:
 def create_app(output_dir: str | Path = "outputs/demo") -> FastAPI:
     store = DemoDataStore(output_dir)
     live_store = LiveSimulationStore(store)
+    allowed_origins = [*DEFAULT_ALLOWED_ORIGINS, *_configured_allowed_origins()]
+    allowed_origin_regex = os.getenv("DEMO_ALLOWED_ORIGIN_REGEX", LOCAL_NETWORK_ORIGIN_REGEX)
 
     app = FastAPI(title="Techem Demo API", version="0.2.0")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=DEFAULT_ALLOWED_ORIGINS,
-        allow_origin_regex=LOCAL_NETWORK_ORIGIN_REGEX,
+        allow_origins=allowed_origins,
+        allow_origin_regex=allowed_origin_regex,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
